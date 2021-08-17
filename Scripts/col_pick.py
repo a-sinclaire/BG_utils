@@ -7,9 +7,9 @@ import pygame
 from PIL import ImageGrab
 from functools import partial
 
-#ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
+if os.environ.get('USERNAME') != "wheez":
+    ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (0, 0)
-
 
 def rgb2hex(rgb):
     r = rgb[0]
