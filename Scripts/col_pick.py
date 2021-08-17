@@ -39,9 +39,12 @@ def on_activate_col_pick():
     print('<pause> pressed (COLOR PICK)')
     # return
     # Take A ScreenShot & Save to File
+    print('Taking Screenshot')
     my_screenshot = pyautogui.screenshot()
+    print('Saving screenshot')
     my_screenshot.save(r'../Assets/screenshot.png')
 
+    print('starting pygame')
     # Start pygame instance
     if not pygame.display.get_init():
         pygame.display.init()
@@ -74,6 +77,7 @@ def on_activate_col_pick():
     cropped_mask.fill((0, 0, 0))
     pygame.draw.circle(cropped_mask, (255, 255, 255), (r * zoom, r * zoom), r)
 
+    print('entering pygame main loop')
     while True:
         # draw BG (display screenshot)
         screen.blit(pyimg_dark, (0, 0))
