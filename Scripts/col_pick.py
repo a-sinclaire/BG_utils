@@ -8,11 +8,7 @@ from PIL import ImageGrab
 from functools import partial
 
 ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
-
-from ctypes import windll  # windows only
-
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (0, 0)
-SetWindowPos = windll.user32.SetWindowPos
 
 
 def rgb2hex(rgb):
@@ -40,16 +36,21 @@ def palette_swap(surf, old_c, new_c):
 
 
 def on_activate_col_pick():
-    print('<alt>+c pressed (COLOR PICK)')
+    print('<pause> pressed (COLOR PICK)')
+    # return
     # Take A ScreenShot & Save to File
-    myscreenshot = pyautogui.screenshot()
-    myscreenshot.save(r'../Assets/screenshot.png')
+    my_screenshot = pyautogui.screenshot()
+    my_screenshot.save(r'../Assets/screenshot.png')
 
     # Start pygame instance
-    pygame.init()
-    pygame.font.init()
-    font = pygame.font.SysFont('Consolas', 30)
+    if not pygame.display.get_init():
+        pygame.display.init()
+    if not pygame.font.get_init():
+        pygame.font.init()
+    pygame.display.set_caption("color_pick")
+    pygame.display.set_allow_screensaver(True)
     pygame.mouse.set_visible(False)
+    font = pygame.font.SysFont('Consolas', 30)
     # pygame.mouse.set_cursor(pygame.cursors.broken_x)
     img = cv2.imread('../Assets/screenshot.png')
     width, height = img.shape[1], img.shape[0]
@@ -67,13 +68,13 @@ def on_activate_col_pick():
     # radius of search circle and zoom level
     r = 100
     zoom = 4
+
     # create circular mask
     cropped_mask = pygame.Surface((r * zoom * 2, r * zoom * 2))
     cropped_mask.fill((0, 0, 0))
     pygame.draw.circle(cropped_mask, (255, 255, 255), (r * zoom, r * zoom), r)
 
-    PICK_COLOR = True
-    while PICK_COLOR:
+    while True:
         # draw BG (display screenshot)
         screen.blit(pyimg_dark, (0, 0))
         # get mouse_x mouse_y
@@ -98,22 +99,32 @@ def on_activate_col_pick():
         screen.blit(cropped, (x - r * zoom, y - r * zoom))
 
         # draw cross-hair
-        crosshair = pygame.Surface((r*2, r*2))
+        crosshair = pygame.Surface((r * 2, r * 2))
         crosshair.fill((0, 0, 0))
         pygame.draw.circle(crosshair, (255, 255, 255), (r, r), r, 1)
-        pygame.draw.line(crosshair, (255, 255, 255), (r, 0), (r, 2*r))
-        pygame.draw.line(crosshair, (255, 255, 255), (0, r), (2*r, r))
+        pygame.draw.line(crosshair, (255, 255, 255), (r, 0), (r, 2 * r))
+        pygame.draw.line(crosshair, (255, 255, 255), (0, r), (2 * r, r))
         # draw color preview box
         pygame.draw.rect(crosshair, (255, 255, 255),
                          (round(r - r / 4) - 1, round(r + r / 4) - 1, round(r / 2) + 2, round(r / 2) + 2),
                          border_radius=round(r / 8))
         crosshair.set_colorkey((0, 0, 0))
-        screen.blit(crosshair, (x-r, y-r))
+        screen.blit(crosshair, (x - r, y - r))
         pygame.draw.rect(screen, rgb, (round(x - r / 4), round(y + r / 4), round(r / 2), round(r / 2)),
                          border_radius=round(r / 8))
+
         # draw hex text
         text = font.render(hex_val, False, (255, 255, 255))
-        screen.blit(text, (x - round(text.get_width() / 2), y + r))
+        if x < r - text.get_width() * .25:
+            x_off = text.get_width() * .5 - x
+        elif x > screen.get_width() - r + text.get_width() * .25:
+            x_off = screen.get_width() - x - text.get_width() * .5
+        else:
+            x_off = 0
+        if y > screen.get_height() - r - text.get_height():
+            screen.blit(text, (x - round(text.get_width() / 2) + x_off, y - r - text.get_height()))
+        else:
+            screen.blit(text, (x - round(text.get_width() / 2) + x_off, y + r))
 
         # update display
         pygame.display.update()
@@ -122,18 +133,24 @@ def on_activate_col_pick():
             if event.type == pygame.MOUSEBUTTONUP:
                 print(hex_val)
                 copy2clip(hex_val)
-                PICK_COLOR = False
+                pygame.display.quit()
                 pygame.quit()
-    return
+                return
 
 
 def on_activate_kill():
-    print('<esc> pressed (QUIT)')
+    print('<scroll_lock> pressed (QUIT)')
     pygame.quit()
     raise MyException("kill")
 
 
-with keyboard.GlobalHotKeys({
-    '<alt>+c': on_activate_col_pick,
-    '<esc>': on_activate_kill}) as h:
+# for some reason i have to press the key combo twice (something with pygame)
+# but also, i can just push one part of the key combo and it goes off?
+# if the combo was <alt>+c for example i could get it to trigger (after the first time)
+# by just pressing alt, or just pressing c. (also an issue with pygame)
+# couldn't find a solution (other than remapping to uncommon keys)
+# maybe in the future replace pygame with something else?
+with keyboard.GlobalHotKeys(
+        {'<pause>': on_activate_col_pick,
+         '<scroll_lock>': on_activate_kill}) as h:
     h.join()
