@@ -7,9 +7,9 @@ import pygame
 from PIL import ImageGrab
 from functools import partial
 
-ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
+if os.environ.get('USERNAME') != "wheez":
+    ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (0, 0)
-
 
 def rgb2hex(rgb):
     r = rgb[0]
@@ -70,7 +70,7 @@ def on_activate_col_pick():
 
     # radius of search circle and zoom level
     r = 100
-    zoom = 4
+    zoom = 8
 
     # create circular mask
     cropped_mask = pygame.Surface((r * zoom * 2, r * zoom * 2))
@@ -140,6 +140,19 @@ def on_activate_col_pick():
                 pygame.display.quit()
                 pygame.quit()
                 return
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    pygame.mouse.set_pos( [ x, y-1])
+                if event.key == pygame.K_DOWN:
+                    pygame.mouse.set_pos( [x, y+1])
+                if event.key == pygame.K_LEFT:
+                    pygame.mouse.set_pos( [x-1, y])
+                if event.key == pygame.K_RIGHT:
+                    pygame.mouse.set_pos( [x+1, y])
+                if event.key == pygame.K_ESCAPE:
+                    pygame.display.quit()
+                    pygame.quit()
+                    return
 
 
 def on_activate_kill():
@@ -155,6 +168,6 @@ def on_activate_kill():
 # couldn't find a solution (other than remapping to uncommon keys)
 # maybe in the future replace pygame with something else?
 with keyboard.GlobalHotKeys(
-        {'<pause>': on_activate_col_pick,
-         '<scroll_lock>': on_activate_kill}) as h:
+        {'<f10>': on_activate_col_pick,
+         '<esc>': on_activate_kill}) as h:
     h.join()
