@@ -13,6 +13,7 @@ pip install pynput</br>
 pip install Pillow</br>
 pip install opencv-python</br>
 pip install pygame</br>
+pip install functools</br>
 
 there are currently two bugs (both caused by using pygame):
 1. after the first press you will have to hit the hotkey twice to activate again
