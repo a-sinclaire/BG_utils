@@ -1,3 +1,5 @@
+from tkinter import ttk
+import tkinter as tk
 import os
 import pyautogui
 from pynput import keyboard
@@ -10,6 +12,11 @@ from functools import partial
 if os.environ.get('USERNAME') != "wheez":
     ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (0, 0)
+
+LARGE_FONT = ("Verdana", 12)
+NORM_FONT = ("Helvetica", 10)
+SMALL_FONT = ("Helvetica", 8)
+
 
 def rgb2hex(rgb):
     r = rgb[0]
@@ -36,15 +43,12 @@ def palette_swap(surf, old_c, new_c):
 
 
 def on_activate_col_pick():
-    print('<pause> pressed (COLOR PICK)')
+    # print('(COLOR PICK)')
     # return
     # Take A ScreenShot & Save to File
-    print('Taking Screenshot')
     my_screenshot = pyautogui.screenshot()
-    print('Saving screenshot')
     my_screenshot.save(r'../Assets/screenshot.png')
 
-    print('starting pygame')
     # Start pygame instance
     if not pygame.display.get_init():
         pygame.display.init()
@@ -70,15 +74,11 @@ def on_activate_col_pick():
 
     # radius of search circle and zoom level
     r = 100
-    zoom = 8
+    zoom = 4
 
-    # create circular mask
-    cropped_mask = pygame.Surface((r * zoom * 2, r * zoom * 2))
-    cropped_mask.fill((0, 0, 0))
-    pygame.draw.circle(cropped_mask, (255, 255, 255), (r * zoom, r * zoom), r)
-
-    print('entering pygame main loop')
     while True:
+        if zoom < 1:
+            zoom = 1
         # draw BG (display screenshot)
         screen.blit(pyimg_dark, (0, 0))
         # get mouse_x mouse_y
@@ -89,9 +89,13 @@ def on_activate_col_pick():
         rgb = [red, g, b]
         hex_val = (rgb2hex(rgb))
 
+        # create circular mask
+        cropped_mask = pygame.Surface((r * zoom * 2, r * zoom * 2))
+        cropped_mask.fill((0, 0, 0))
+        pygame.draw.circle(cropped_mask, (255, 255, 255), (r * zoom, r * zoom), r)
         # Create zoomed portion (copy of BG) #
         cropped = pygame.Surface((r * 2, r * 2))
-        cropped.blit(pyimg, (0, 0), (x - r, y - r, r * zoom, r * zoom))
+        cropped.blit(pyimg, (0, 0), (x - r, y - r, r * 2, r * 2))
         # swap true black to something close so it isn't color_keyed out
         cropped = palette_swap(cropped, (0, 0, 0), (2, 2, 2))
         # zoom in and mask out circle
@@ -135,28 +139,42 @@ def on_activate_col_pick():
 
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONUP:
-                print(hex_val)
                 copy2clip(hex_val)
                 pygame.display.quit()
                 pygame.quit()
                 return
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
-                    pygame.mouse.set_pos( [ x, y-1])
+                    pygame.mouse.set_pos([x, y-1])
                 if event.key == pygame.K_DOWN:
-                    pygame.mouse.set_pos( [x, y+1])
+                    pygame.mouse.set_pos([x, y+1])
                 if event.key == pygame.K_LEFT:
-                    pygame.mouse.set_pos( [x-1, y])
+                    pygame.mouse.set_pos([x-1, y])
                 if event.key == pygame.K_RIGHT:
-                    pygame.mouse.set_pos( [x+1, y])
+                    pygame.mouse.set_pos([x+1, y])
+                if event.key == pygame.K_LEFTBRACKET:
+                    zoom -= 1
+                if event.key == pygame.K_RIGHTBRACKET:
+                    zoom += 1
                 if event.key == pygame.K_ESCAPE:
                     pygame.display.quit()
                     pygame.quit()
                     return
 
 
+def popupmsg(msg):
+    popup = tk.Tk()
+    popup.wm_title("msg box")
+    label = ttk.Label(popup, text=msg, font=NORM_FONT)
+    label.pack(side="top", fill="x", pady=10)
+    B1 = ttk.Button(popup, text="Okay", command=popup.destroy)
+    B1.pack()
+    popup.mainloop()
+
+
 def on_activate_kill():
-    print('<scroll_lock> pressed (QUIT)')
+    # print('(QUIT)')
+    popupmsg("Color Pick Thread has been Killed")
     pygame.quit()
     raise MyException("kill")
 
@@ -168,6 +186,6 @@ def on_activate_kill():
 # couldn't find a solution (other than remapping to uncommon keys)
 # maybe in the future replace pygame with something else?
 with keyboard.GlobalHotKeys(
-        {'<f10>': on_activate_col_pick,
-         '<esc>': on_activate_kill}) as h:
+        {'<f9>': on_activate_col_pick,
+         '<scroll_lock>': on_activate_kill}) as h:
     h.join()
