@@ -103,8 +103,11 @@ def on_activate_col_pick():
         # Create zoomed portion (copy of BG) #
         cropped = pygame.Surface((r * 2, r * 2))
         cropped.blit(pyimg, (0, 0), (x - r, y - r, r * 2, r * 2))
-        # swap true black to something close so it isn't color_keyed out
-        cropped = palette_swap(cropped, (0, 0, 0), (2, 2, 2))
+        # add tiny bit to every pixel so that no true blacks get color_keyed out
+        bright = pygame.Surface(cropped.get_size())
+        bright.fill((255, 255, 255))
+        bright.set_alpha(3)
+        cropped.blit(bright, (0, 0))
         # zoom in and mask out circle
         cropped = pygame.transform.scale(cropped, (r * zoom * 2, r * zoom * 2))
         cropped.blit(cropped_mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
