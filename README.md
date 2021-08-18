@@ -8,6 +8,8 @@ when a shortcut key is pressed col_pick mode is activated</br>
 wherever you click it will give you the hex value of that pixel's color</br>
 the hex value will be stored on your clipboard automatically</br>
 use the square brackets to change zoom level</br>
+use comma and period to change circle size</br>
+use h key to toggle ui</br>
 (TIP: You could easily use this tool as a magnifier as well!)
 
 pip install pyautogui</br>
