@@ -5,7 +5,7 @@ when a shortcut key is pressed col_pick mode is activated</br>
 (shortcut is currently set to &lt;f9> key)</br>
 (&lt;scroll_lock> terminates the thread)
 
-wherever you click it will give you the hex value of that pixel's color</br>
+wherever you click (or press return) it will give you the hex value of that pixel's color</br>
 the hex value will be stored on your clipboard automatically</br>
 use the square brackets to change zoom level</br>
 use comma and period to change circle size</br>
