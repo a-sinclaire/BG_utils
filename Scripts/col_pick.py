@@ -75,10 +75,17 @@ def on_activate_col_pick():
     # radius of search circle and zoom level
     r = 100
     zoom = 4
+    hide = False
 
     while True:
         if zoom < 1:
             zoom = 1
+        if zoom > 6:
+            zoom = 6
+        if r < 100:
+            r = 100
+        if r > 200:
+            r = 200
         # draw BG (display screenshot)
         screen.blit(pyimg_dark, (0, 0))
         # get mouse_x mouse_y
@@ -106,39 +113,40 @@ def on_activate_col_pick():
         # blit onto surface
         screen.blit(cropped, (x - r * zoom, y - r * zoom))
 
-        # draw cross-hair
-        crosshair = pygame.Surface((r * 2, r * 2))
-        crosshair.fill((0, 0, 0))
-        pygame.draw.circle(crosshair, (255, 255, 255), (r, r), r, 1)
-        pygame.draw.line(crosshair, (255, 255, 255), (r, 0), (r, 2 * r))
-        pygame.draw.line(crosshair, (255, 255, 255), (0, r), (2 * r, r))
-        # draw color preview box
-        pygame.draw.rect(crosshair, (255, 255, 255),
-                         (round(r - r / 4) - 1, round(r + r / 4) - 1, round(r / 2) + 2, round(r / 2) + 2),
-                         border_radius=round(r / 8))
-        crosshair.set_colorkey((0, 0, 0))
-        screen.blit(crosshair, (x - r, y - r))
-        pygame.draw.rect(screen, rgb, (round(x - r / 4), round(y + r / 4), round(r / 2), round(r / 2)),
-                         border_radius=round(r / 8))
+        if not hide:
+            # draw cross-hair
+            crosshair = pygame.Surface((r * 2, r * 2))
+            crosshair.fill((0, 0, 0))
+            pygame.draw.circle(crosshair, (255, 255, 255), (r, r), r, 1)
+            pygame.draw.line(crosshair, (255, 255, 255), (r, 0), (r, 2 * r))
+            pygame.draw.line(crosshair, (255, 255, 255), (0, r), (2 * r, r))
+            # draw color preview box
+            pygame.draw.rect(crosshair, (255, 255, 255),
+                             (round(r - r / 4) - 1, round(r + r / 4) - 1, round(r / 2) + 2, round(r / 2) + 2),
+                             border_radius=round(r / 8))
+            crosshair.set_colorkey((0, 0, 0))
+            screen.blit(crosshair, (x - r, y - r))
+            pygame.draw.rect(screen, rgb, (round(x - r / 4), round(y + r / 4), round(r / 2), round(r / 2)),
+                             border_radius=round(r / 8))
 
-        # draw hex text
-        text = font.render(hex_val, False, (255, 255, 255))
-        if x < r - text.get_width() * .25:
-            x_off = text.get_width() * .5 - x
-        elif x > screen.get_width() - r + text.get_width() * .25:
-            x_off = screen.get_width() - x - text.get_width() * .5
-        else:
-            x_off = 0
-        if y > screen.get_height() - r - text.get_height():
-            screen.blit(text, (x - round(text.get_width() / 2) + x_off, y - r - text.get_height()))
-        else:
-            screen.blit(text, (x - round(text.get_width() / 2) + x_off, y + r))
+            # draw hex text
+            text = font.render(hex_val, False, (255, 255, 255))
+            if x < r - text.get_width() * .25:
+                x_off = text.get_width() * .5 - x
+            elif x > screen.get_width() - r + text.get_width() * .25:
+                x_off = screen.get_width() - x - text.get_width() * .5
+            else:
+                x_off = 0
+            if y > screen.get_height() - r - text.get_height():
+                screen.blit(text, (x - round(text.get_width() / 2) + x_off, y - r - text.get_height()))
+            else:
+                screen.blit(text, (x - round(text.get_width() / 2) + x_off, y + r))
 
         # update display
         pygame.display.update()
 
         for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONUP:
+            if event.type == pygame.MOUSEBUTTONUP or (event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN):
                 copy2clip(hex_val)
                 pygame.display.quit()
                 pygame.quit()
@@ -156,6 +164,12 @@ def on_activate_col_pick():
                     zoom -= 1
                 if event.key == pygame.K_RIGHTBRACKET:
                     zoom += 1
+                if event.key == pygame.K_COMMA:
+                    r -= 20
+                if event.key == pygame.K_PERIOD:
+                    r += 20
+                if event.key == pygame.K_h:
+                    hide = not hide
                 if event.key == pygame.K_ESCAPE:
                     pygame.display.quit()
                     pygame.quit()
